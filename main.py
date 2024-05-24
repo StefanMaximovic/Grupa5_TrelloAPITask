@@ -1,4 +1,4 @@
-from models.genericClient import GenericClient
+from genericClient import GenericClient
 from models.board import Board
 from models.list import List
 
