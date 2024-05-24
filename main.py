@@ -46,15 +46,20 @@ for card in fetched_card_data:
             comment_data['data']['text']
         )
         comments.append(comment)
+print("Cards:")
+for card in cards:
+    print(card)
+    print("------")
 
-print(cards)
-
+print("\nChecklists:")
 for check_list in checklists:
     print(check_list)
     print("------")
 
+print("\nComments:")
 for comment in comments:
     print(comment)
+    print("------")
 
 
 
