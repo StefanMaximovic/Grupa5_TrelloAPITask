@@ -1,22 +1,28 @@
+import json
 from genericClient import GenericClient
 from models.board import Board
 from models.list import List
 from models.card import Card
 from models.checkList import CheckList
 from models.comment import Comment
+from fileManager import FileManager
 
 client = GenericClient("737f990a50b95a1db675188c99175c8a", "ATTA7d15664b7f73521ad1fafa12717b24d6de9136f780224304473d52fe59b0452e0935F6AF", "https://api.trello.com/1")
-
+file_manager = FileManager('.')
 
 fetched_board_data = client.get("boards/6645fee8d15bb6bc3076c8e9")
 board = Board(fetched_board_data.get("id"),fetched_board_data.get("name"),fetched_board_data.get("desc"),fetched_board_data.get("shortUrl"))
 print(board)
 print("------")
 
+file_manager.save_to_file('board.json', board.__dict__)
+
 fetched_list_data = client.get("lists/66460051007109943d036a44")
 trello_list = List(fetched_list_data.get("id"),fetched_list_data.get("name"),fetched_list_data.get("idboard"))
 print(trello_list)
 print("------")
+
+file_manager.save_to_file('lists.json', trello_list.__dict__)
 
 cards = []
 checklists = []
@@ -38,14 +44,23 @@ for card in fetched_card_data:
 
 #Fetch comments for each card
     card_comments_data = client.get(f'cards/{card.get("id")}/actions?filter=commentCard')
-    for comment_data in card_comments_data:
+    for attachment_data in card_comments_data:
         comment = Comment(
-            comment_data.get("id"),
-            comment_data.get("idMemberCreator"),
-            comment_data.get("date"),
-            comment_data['data']['text']
+            attachment_data.get("id"),
+            attachment_data.get("idMemberCreator"),
+            attachment_data.get("date"),
+            attachment_data['data']['text']
         )
         comments.append(comment)
+
+#Fetch attachment for each card
+    card_attachments = client.get(f'cards/{card.get("id")}/attachments')
+    for attachment in card_attachments:
+        attachment_data = client.get_attachment(attachment.get('url'))
+        img_name = attachment.get('name')
+        img_id = attachment.get('id')
+        file_manager.save_attachment(f"{img_name.replace('.png', '')}-{img_id}.png", attachment_data.content)
+
 print("Cards:")
 for card in cards:
     print(card)
@@ -60,6 +75,35 @@ print("\nComments:")
 for comment in comments:
     print(comment)
     print("------")
+
+file_manager.save_to_file('cards.json', [card.__dict__ for card in cards])
+
+file_manager.save_to_file('checklists.json', [check_list.__dict__ for check_list in checklists])
+
+file_manager.save_to_file('comments.json', [comment.__dict__ for comment in comments])
+
+
+print("Files:")
+file_manager.list_files()
+
+print("\nBoard:")
+file_manager.display_file_content('board.json')
+
+print("\nList:")
+file_manager.display_file_content('lists.json')
+
+print("\nCards:")
+file_manager.display_file_content('cards.json')
+
+print("\nChecklist:")
+file_manager.display_file_content('checklists.json')
+
+print("\nComments:")
+file_manager.display_file_content('comments.json')
+
+print("\nAttachments:")
+file_manager.display_attachments()
+
 
 
 

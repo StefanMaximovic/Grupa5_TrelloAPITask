@@ -19,6 +19,11 @@ class GenericClient:
 
     def post(self, endpoint: str, data: dict) -> dict:
         url = f"{self.base_url}/{endpoint}"
-        response = requests.post(url, data=data,timeout=10)
+        response = requests.post(url, data=data, timeout=10)
         response.raise_for_status()
         return response.json()
+
+    def get_attachment(self, url: str) -> dict:
+        headers = {"Authorization": f"OAuth oauth_consumer_key=\"{self.api_key}\", oauth_token=\"{self.api_token}\""}
+        response = requests.get(url, headers=headers, timeout=10)
+        return response
