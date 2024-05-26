@@ -11,14 +11,14 @@ client = GenericClient("737f990a50b95a1db675188c99175c8a", "ATTA7d15664b7f73521a
 file_manager = FileManager('.')
 
 fetched_board_data = client.get("boards/6645fee8d15bb6bc3076c8e9")
-board = Board(fetched_board_data.get("id"),fetched_board_data.get("name"),fetched_board_data.get("desc"),fetched_board_data.get("shortUrl"))
+board = Board(fetched_board_data.get("id"), fetched_board_data.get("name"), fetched_board_data.get("desc"), fetched_board_data.get("shortUrl"))
 print(board)
 print("------")
 
 file_manager.save_to_file('board.json', board.__dict__)
 
 fetched_list_data = client.get("lists/66460051007109943d036a44")
-trello_list = List(fetched_list_data.get("id"),fetched_list_data.get("name"),fetched_list_data.get("idboard"))
+trello_list = List(fetched_list_data.get("id"), fetched_list_data.get("name"), fetched_list_data.get("idboard"))
 print(trello_list)
 print("------")
 
@@ -29,7 +29,7 @@ checklists = []
 comments = []
 fetched_card_data = client.get("boards/6645fee8d15bb6bc3076c8e9/cards")
 for card in fetched_card_data:
-    cards.append(Card(card.get("id"),card.get("name"),card.get("desc"),card.get("shortUrl")))
+    cards.append(Card(card.get("id"), card.get("name"), card.get("desc"), card.get("shortUrl")))
 
 #Fetch checklist for each card
     card_checklist_data = client.get(f'cards/{card.get("id")}/checklists')
