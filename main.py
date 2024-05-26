@@ -1,4 +1,3 @@
-import json
 from genericClient import GenericClient
 from models.board import Board
 from models.list import List
