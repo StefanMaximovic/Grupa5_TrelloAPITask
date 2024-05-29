@@ -9,17 +9,37 @@ from fileManager import FileManager
 client = GenericClient("737f990a50b95a1db675188c99175c8a", "ATTA7d15664b7f73521ad1fafa12717b24d6de9136f780224304473d52fe59b0452e0935F6AF", "https://api.trello.com/1")
 file_manager = FileManager('.')
 
-fetched_board_data = client.get("boards/6645fee8d15bb6bc3076c8e9")
-board = Board(fetched_board_data.get("id"), fetched_board_data.get("name"), fetched_board_data.get("desc"), fetched_board_data.get("shortUrl"))
-print(board)
-print("------")
+
+try:
+    fetched_board_data = client.get("boards/6645fee8d15bb6bc3076c8e9")
+    board = Board(
+        fetched_board_data.get("id"),
+        fetched_board_data.get("name"),
+        fetched_board_data.get("desc"),
+        fetched_board_data.get("shortUrl")
+    )
+    print(board)
+    print("------")
+except Exception as e:
+    print(f"An error occurred: {e}")
 
 file_manager.save_to_file('board.json', board.__dict__)
 
-fetched_list_data = client.get("lists/66460051007109943d036a44")
-trello_list = List(fetched_list_data.get("id"), fetched_list_data.get("name"), fetched_list_data.get("idboard"))
-print(trello_list)
-print("------")
+try:
+    fetched_list_data = client.get("lists/66460051007109943d036a44")
+    list_id = fetched_list_data.get("id")
+    list_name = fetched_list_data.get("name")
+    list_idboard = fetched_list_data.get("idboard")
+    trello_list = List(list_id, list_name, list_idboard)
+    print(trello_list)
+    print("------")
+except AttributeError as e:
+    print(f"Attribute error: {e}")
+except KeyError as e:
+    print(f"Key error: {e}")
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
+
 
 file_manager.save_to_file('lists.json', trello_list.__dict__)
 
@@ -31,17 +51,35 @@ for card in fetched_card_data:
     cards.append(Card(card.get("id"), card.get("name"), card.get("desc"), card.get("shortUrl")))
 
 #Fetch checklist for each card
-    card_checklist_data = client.get(f'cards/{card.get("id")}/checklists')
-    for checklist_data in card_checklist_data:
-        check_list = CheckList(
-            checklist_data.get("id"),
-            checklist_data.get("name"),
-            checklist_data.get("idBoard"),
-            checklist_data.get("idCard")
-        )
-        checklists.append(check_list)
+cards = []
+checklists = []
+comments = []
+
+try:
+    fetched_card_data = client.get("boards/6645fee8d15bb6bc3076c8e9/cards")
+    for card in fetched_card_data:
+        try:
+            cards.append(Card(card.get("id"), card.get("name"), card.get("desc"), card.get("shortUrl")))
+            card_checklist_data = client.get(f'cards/{card.get("id")}/checklists')
+            for checklist_data in card_checklist_data:
+                try:
+                    checklists.append(CheckList(
+                        checklist_data.get("id"),
+                        checklist_data.get("name"),
+                        checklist_data.get("idBoard"),
+                        checklist_data.get("idCard")
+                    ))
+                except Exception as e:
+                    print(f"Error while processing checklist data: {e}")
+        except Exception as e:
+            print(f"Error while processing card data: {e}")
+
+except Exception as e:
+    print(f"Error while fetching card data: {e}")
+
 
 #Fetch comments for each card
+try:
     card_comments_data = client.get(f'cards/{card.get("id")}/actions?filter=commentCard')
     for attachment_data in card_comments_data:
         comment = Comment(
@@ -51,14 +89,19 @@ for card in fetched_card_data:
             attachment_data['data']['text']
         )
         comments.append(comment)
+except Exception as e:
+    print(f"Error occurred while fetching card data: {e}")
 
 #Fetch attachment for each card
+try:
     card_attachments = client.get(f'cards/{card.get("id")}/attachments')
     for attachment in card_attachments:
         attachment_data = client.get_attachment(attachment.get('url'))
         img_name = attachment.get('name')
         img_id = attachment.get('id')
         file_manager.save_attachment(f"{img_name.replace('.png', '')}-{img_id}.png", attachment_data.content)
+except Exception as e:
+    print(f"Error occurred while fetching card data: {e}")
 
 print("Cards:")
 for card in cards:

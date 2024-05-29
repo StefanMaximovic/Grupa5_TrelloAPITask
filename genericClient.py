@@ -25,5 +25,9 @@ class GenericClient:
 
     def get_attachment(self, url: str) -> dict:
         headers = {"Authorization": f"OAuth oauth_consumer_key=\"{self.api_key}\", oauth_token=\"{self.api_token}\""}
+        query = {
+         'key': self.api_key,
+         'token': self.api_token
+        }
         response = requests.get(url, headers=headers, timeout=10)
         return response
