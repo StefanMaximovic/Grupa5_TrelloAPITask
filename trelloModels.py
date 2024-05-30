@@ -1,17 +1,18 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from databaseconnection import DatabaseConnection
+from databaseConnection import DatabaseConnection
+
 
 Base = declarative_base()
 engine = create_engine('sqlite:///trello.db')
-Base.metadata.create_all(engine)
+#Base.metadata.create_all(engine)
 db_connection = DatabaseConnection('sqlite:///trello.db')
 
 class Board(Base):
     __tablename__ = 'boards'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     name = Column(String)
 
     lists = relationship("List", back_populates="board")
@@ -19,9 +20,9 @@ class Board(Base):
 class List(Base):
     __tablename__ = 'lists'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     name = Column(String)
-    board_id = Column(Integer, ForeignKey('boards.id'))
+    board_id = Column(String, ForeignKey('boards.id'))
 
     board = relationship("Board", back_populates="lists")
     cards = relationship("Card", back_populates="list")
@@ -29,10 +30,10 @@ class List(Base):
 class Card(Base):
     __tablename__ = 'cards'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     title = Column(String)
     description = Column(String)
-    list_id = Column(Integer, ForeignKey('lists.id'))
+    list_id = Column(String, ForeignKey('lists.id'))
 
     list = relationship("List", back_populates="cards")
     checklists = relationship("Checklist", back_populates="card")
@@ -42,26 +43,28 @@ class Card(Base):
 class Checklist(Base):
     __tablename__ = 'checklists'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     name = Column(String)
-    card_id = Column(Integer, ForeignKey('cards.id'))
+    card_id = Column(String, ForeignKey('cards.id'))
 
     card = relationship("Card", back_populates="checklists")
 
 class Attachment(Base):
     __tablename__ = 'attachments'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     file_path = Column(String)
-    card_id = Column(Integer, ForeignKey('cards.id'))
+    card_id = Column(String, ForeignKey('cards.id'))
 
     card = relationship("Card", back_populates="attachments")
 
 class Comment(Base):
     __tablename__ = 'comments'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     text = Column(String)
-    card_id = Column(Integer, ForeignKey('cards.id'))
+    card_id = Column(String, ForeignKey('cards.id'))
 
     card = relationship("Card", back_populates="comments")
+
+Base.metadata.create_all(engine)

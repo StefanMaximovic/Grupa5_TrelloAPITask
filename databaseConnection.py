@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+
 class DatabaseConnection:
     def __init__(self, db_url):
         self.engine = create_engine(db_url)
