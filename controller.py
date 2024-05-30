@@ -8,6 +8,16 @@ from models.comment import Comment
 from fileManager import FileManager
 import requests
 
+from trelloModels import List as ListaTrello
+from trelloModels import Card as CardTrello
+
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+
+engine = create_engine('sqlite:///trello.db')
+Session = sessionmaker(bind=engine)
+session = Session()
+
 
 app = FastAPI()
 client = GenericClient("737f990a50b95a1db675188c99175c8a", "ATTA7d15664b7f73521ad1fafa12717b24d6de9136f780224304473d52fe59b0452e0935F6AF", "https://api.trello.com/1")
@@ -42,7 +52,7 @@ async def getComment(card_id):
     return comments 
 
 cards = []
-#127.0.0.1:8000/lists/66460051007109943d036a44                      -- Radi?
+#127.0.0.1:8000/lists/66460051007109943d036a44                      -- Radi
 @app.get("/lists/{list_id}")
 async def getListInfo(list_id):
     fetched_card_data = client.get("boards/6645fee8d15bb6bc3076c8e9/cards")
@@ -57,8 +67,12 @@ async def napravi_karticu(list_id):
      api_key = "737f990a50b95a1db675188c99175c8a"
      token = "ATTA7d15664b7f73521ad1fafa12717b24d6de9136f780224304473d52fe59b0452e0935F6AF"
      url_post = "https://api.trello.com/1/cards"
-     query_post = {"key":api_key,"token":token,"name":"nova kartica","desc":"deskripcija","idList":list_id}
+     name="nova kartica"
+     desc="deskripcija"
+     query_post = {"key":api_key,"token":token,"name":name,"desc":desc,"idList":list_id}
      response = requests.post(url_post,query_post,timeout=10)
+     session.add(CardTrello(id="",title=name,description=desc,list_id=list_id))
+     session.commit()
 
 #http://127.0.0.1:8000/list/6645fee8d15bb6bc3076c8e9                -- Radi kroz docs
 @app.post("/list/{board_id}")
@@ -66,6 +80,9 @@ async def nova_lista(board_id):
     api_key = "737f990a50b95a1db675188c99175c8a"
     token = "ATTA7d15664b7f73521ad1fafa12717b24d6de9136f780224304473d52fe59b0452e0935F6AF"
     url_post = "https://api.trello.com/1/lists"
-    query_post = {"name":"NovaLista","idBoard":board_id,"key":api_key,"token":token}
+    name="NovaLista"
+    query_post = {"name":name,"idBoard":board_id,"key":api_key,"token":token}
     response = requests.post(url_post,query_post,timeout=10)
+    session.add(ListaTrello(id="",name=name,board_id=board_id))
+    session.commit()
     

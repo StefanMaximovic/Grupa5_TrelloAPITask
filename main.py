@@ -1,16 +1,8 @@
 from genericClient import GenericClient
-from models.board import Board
-from models.list import List
 from models.card import Card
-from models.checkList import CheckList
-from models.comment import Comment
 from fileManager import FileManager
-
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from databaseConnection import DatabaseConnection
+from sqlalchemy import create_engine
 from trelloModels import Board as BoardTrello
 from trelloModels import List as ListaTrello
 from trelloModels import Card as CardTrello
@@ -20,21 +12,13 @@ from trelloModels import Attachment as AttachmentTrello
 
 
 engine = create_engine('sqlite:///trello.db')
-
-
 Session = sessionmaker(bind=engine)
-
 session = Session()
-
 # board1 = BoardTrello(id="6645fee8d15bb6bc3076c8e9a", name="Board 1")
-
 # session.add(board1)
 # session.commit()
-
-
 client = GenericClient("737f990a50b95a1db675188c99175c8a", "ATTA7d15664b7f73521ad1fafa12717b24d6de9136f780224304473d52fe59b0452e0935F6AF", "https://api.trello.com/1")
 file_manager = FileManager('.')
-
 
 try:
     fetched_board_data = client.get("boards/6645fee8d15bb6bc3076c8e9")
@@ -58,7 +42,7 @@ except Exception as e:
 try:
     fetched_list_data = client.get("lists/66460051007109943d036a44")
     #trello_list = List(list_id, list_name, list_idboard)
-    lista1 = ListaTrello(id=fetched_list_data.get("id"), name=fetched_list_data.get("name"), board_id=fetched_list_data.get("66460051007109943d036a44"))
+    lista1 = ListaTrello(id=fetched_list_data.get("id"), name=fetched_list_data.get("name"), board_id="6645fee8d15bb6bc3076c8e9")
     #print(trello_list)
     session.add(lista1)
     session.commit()
