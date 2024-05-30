@@ -6,15 +6,18 @@ from models.checkList import CheckList
 from models.comment import Comment
 from fileManager import FileManager
 
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from databaseConnection import DatabaseConnection
-import trelloModels
 from trelloModels import Board as BoardTrello
 from trelloModels import List as ListaTrello
 from trelloModels import Card as CardTrello
-from sqlalchemy.orm import sessionmaker
+from trelloModels import Checklist as CheckListTrello
+from trelloModels import Comment as CommentTrello
+from trelloModels import Attachment as AttachmentTrello
+
 
 engine = create_engine('sqlite:///trello.db')
 
@@ -45,7 +48,8 @@ try:
    # print(board)
     session.add(board1)
     session.commit()
-    print("------")
+    print("------Board")
+    
 except Exception as e:
     print(f"An error occurred: {e}")
 
@@ -58,7 +62,7 @@ try:
     #print(trello_list)
     session.add(lista1)
     session.commit()
-    print("------")
+    print("------List")
 except AttributeError as e:
     print(f"Attribute error: {e}")
 except KeyError as e:
@@ -76,13 +80,13 @@ fetched_card_data = client.get("boards/6645fee8d15bb6bc3076c8e9/cards")
 for card in fetched_card_data:
     session.add(CardTrello(id=card.get("id"),title=card.get("name"),description=card.get("desc"),list_id="66460051007109943d036a44"))
     session.commit()
+    print("------Card")
     #cards.append(Card(card.get("id"), card.get("name"), card.get("desc"), card.get("shortUrl")))
 
 #Fetch checklist for each card
 cards = []
 checklists = []
-comments = []
-
+comments = [] 
 try:
     fetched_card_data = client.get("boards/6645fee8d15bb6bc3076c8e9/cards")
     for card in fetched_card_data:
@@ -91,12 +95,11 @@ try:
             card_checklist_data = client.get(f'cards/{card.get("id")}/checklists')
             for checklist_data in card_checklist_data:
                 try:
-                    checklists.append(CheckList(
-                        checklist_data.get("id"),
-                        checklist_data.get("name"),
-                        checklist_data.get("idBoard"),
-                        checklist_data.get("idCard")
-                    ))
+#checklists.append(CheckList(
+                    session.add(CheckListTrello(id=checklist_data.get("id"),name=checklist_data.get("name"),card_id="a1KYivzq"))
+#checklist_data.get("idBoard")
+                    session.commit()
+                    print("------CheckList")
                 except Exception as e:
                     print(f"Error while processing checklist data: {e}")
         except Exception as e:
@@ -107,72 +110,73 @@ except Exception as e:
 
 
 #Fetch comments for each card
+
 try:
     card_comments_data = client.get(f'cards/{card.get("id")}/actions?filter=commentCard')
     for attachment_data in card_comments_data:
-        comment = Comment(
-            attachment_data.get("id"),
-            attachment_data.get("idMemberCreator"),
-            attachment_data.get("date"),
-            attachment_data['data']['text']
-        )
-        comments.append(comment)
+        session.add(CommentTrello(id=attachment_data.get("id"),text=attachment_data["data"]["text"],card_id="OidP4NJH"))
+        session.commit()
+        print("------Comment")
+        #comments.append(comment)
 except Exception as e:
     print(f"Error occurred while fetching card data: {e}")
-
+       
 #Fetch attachment for each card
 try:
-    card_attachments = client.get(f'cards/{card.get("id")}/attachments')
+    card_attachments = client.get(f'cards/tW9MZcjt/attachments')
     for attachment in card_attachments:
-        attachment_data = client.get_attachment(attachment.get('url'))
-        img_name = attachment.get('name')
-        img_id = attachment.get('id')
-        file_manager.save_attachment(f"{img_name.replace('.png', '')}-{img_id}.png", attachment_data.content)
+        session.add(AttachmentTrello(id=attachment.get('id'),file_path=attachment.get('url'),card_id="tW9MZcjt"))
+        session.commit()
+        print("------Attachment")
+        #attachment_data = client.get_attachment(attachment.get('url'))
+        #img_name = attachment.get('name')
+        #img_id = attachment.get('id')
+        #file_manager.save_attachment(f"{img_name.replace('.png', '')}-{img_id}.png", attachment_data.content)
 except Exception as e:
     print(f"Error occurred while fetching card data: {e}")
 
-print("Cards:")
-for card in cards:
-    print(card)
-    print("------")
+# print("Cards:")
+# for card in cards:
+#     print(card)
+#     print("------")
 
-print("\nChecklists:")
-for check_list in checklists:
-    print(check_list)
-    print("------")
+# print("\nChecklists:")
+# for check_list in checklists:
+#     print(check_list)
+#     print("------")
 
-print("\nComments:")
-for comment in comments:
-    print(comment)
-    print("------")
+# print("\nComments:")
+# for comment in comments:
+#     print(comment)
+#     print("------")
 
-file_manager.save_to_file('cards.json', [card.__dict__ for card in cards])
+# file_manager.save_to_file('cards.json', [card.__dict__ for card in cards])
 
-file_manager.save_to_file('checklists.json', [check_list.__dict__ for check_list in checklists])
+# file_manager.save_to_file('checklists.json', [check_list.__dict__ for check_list in checklists])
 
-file_manager.save_to_file('comments.json', [comment.__dict__ for comment in comments])
+# file_manager.save_to_file('comments.json', [comment.__dict__ for comment in comments])
 
 
-print("Files:")
-file_manager.list_files()
+# print("Files:")
+# file_manager.list_files()
 
-print("\nBoard:")
-file_manager.display_file_content('board.json')
+# print("\nBoard:")
+# file_manager.display_file_content('board.json')
 
-print("\nList:")
-file_manager.display_file_content('lists.json')
+# print("\nList:")
+# file_manager.display_file_content('lists.json')
 
-print("\nCards:")
-file_manager.display_file_content('cards.json')
+# print("\nCards:")
+# file_manager.display_file_content('cards.json')
 
-print("\nChecklist:")
-file_manager.display_file_content('checklists.json')
+# print("\nChecklist:")
+# file_manager.display_file_content('checklists.json')
 
-print("\nComments:")
-file_manager.display_file_content('comments.json')
+# print("\nComments:")
+# file_manager.display_file_content('comments.json')
 
-print("\nAttachments:")
-file_manager.display_attachments()
+# print("\nAttachments:")
+# file_manager.display_attachments()
 
 
 
